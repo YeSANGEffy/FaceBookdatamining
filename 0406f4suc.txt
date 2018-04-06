@@ -1,0 +1,42 @@
+clear;
+clc;
+addpath('matlab');
+spec = csvread('dataset_fb_f4_nume_csv.txt');
+spectf = (spec - repmat(min(spec,[],1),size(spec,1),1))*spdiags(1./(max(spec,[],1)-min(spec,[],1))',0,size(spec,2),size(spec,2));
+
+label = spectf(:,end);
+%inst =spectf(:,1:6);
+inst =spectf(:,1:7);
+
+inst_sparse = sparse(inst);
+
+%
+ind = 300;
+traindata = inst_sparse(1:ind,:);
+trainlabel = label(1:ind,:);
+testdata = inst_sparse(ind+1:end,:);
+testlabel = label(ind+1:end,:);
+
+%
+model = svmtrain(trainlabel,traindata,'-s 3 -t 2 -c 1.2 -g 0.14');
+%
+[predict_label, accuracy, dec_values] = svmpredict(testlabel,testdata, model);
+%pre = svmpredict(testlabel,testdata,model);
+test_err = testlabel-predict_label; 
+test_errpct = abs(test_err)./testlabel*100; 
+test_MAPE = mean(test_errpct(~isinf(test_errpct)));
+%%
+%model_precomputed = svmtrain(trainlabel, [(1:300)', traindata*traindata'], '-t 4');
+%[predict_label_P, accuracy_P, dec_values_P] = svmpredict(testlabel, [(1:200)', testdata*traindata'], model_precomputed);
+ % Display the accuracy using linear kernel
+ % Display the accuracy using precomputed kernel
+
+*
+optimization finished, #iter = 134
+nu = 0.082806
+obj = -1.745866, rho = 0.003227
+nSV = 33, nBSV = 19
+Mean squared error = 0.00821674 (regression)
+Squared correlation coefficient = 0.00102586 (regression)
+
+
