@@ -2,35 +2,38 @@ clear;
 clc;
 addpath('matlab');
 spec = csvread('dataset_fb_f4_nume_csv.txt');
+%scaling [0,1]
 spectf = (spec - repmat(min(spec,[],1),size(spec,1),1))*spdiags(1./(max(spec,[],1)-min(spec,[],1))',0,size(spec,2),size(spec,2));
-
+%the last column is label
 label = spectf(:,end);
 %inst =spectf(:,1:6);
 inst =spectf(:,1:7);
-
+%sparsing
 inst_sparse = sparse(inst);
 
-%
+%first 300 for training, rest 200 for test
 ind = 300;
 traindata = inst_sparse(1:ind,:);
 trainlabel = label(1:ind,:);
 testdata = inst_sparse(ind+1:end,:);
 testlabel = label(ind+1:end,:);
 
-%
+%svmtrain parameters to be valided
 model = svmtrain(trainlabel,traindata,'-s 3 -t 2 -c 1.2 -g 0.14');
-%
+%svm predict
 [predict_label, accuracy, dec_values] = svmpredict(testlabel,testdata, model);
-%pre = svmpredict(testlabel,testdata,model);
+%compute MAPE
 test_err = testlabel-predict_label; 
 test_errpct = abs(test_err)./testlabel*100; 
 test_MAPE = mean(test_errpct(~isinf(test_errpct)));
-%%
+
+%%what's precomputed?
 %model_precomputed = svmtrain(trainlabel, [(1:300)', traindata*traindata'], '-t 4');
 %[predict_label_P, accuracy_P, dec_values_P] = svmpredict(testlabel, [(1:200)', testdata*traindata'], model_precomputed);
  % Display the accuracy using linear kernel
  % Display the accuracy using precomputed kernel
-
+ 
+%result:
 *
 optimization finished, #iter = 134
 nu = 0.082806
@@ -39,4 +42,5 @@ nSV = 33, nBSV = 19
 Mean squared error = 0.00821674 (regression)
 Squared correlation coefficient = 0.00102586 (regression)
 
+252.7915 %MAPE
 
